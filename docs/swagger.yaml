@@ -1,0 +1,761 @@
+definitions:
+  database.GetAllResponse-models_List:
+    properties:
+      count:
+        type: integer
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.List'
+        type: array
+      length:
+        type: integer
+      message:
+        type: string
+      totalPage:
+        type: number
+    type: object
+  database.GetAllResponse-models_Todo:
+    properties:
+      count:
+        type: integer
+      currentPage:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.Todo'
+        type: array
+      length:
+        type: integer
+      message:
+        type: string
+      totalPage:
+        type: number
+    type: object
+  database.GetResponse-models_List:
+    properties:
+      data:
+        $ref: '#/definitions/models.List'
+      message:
+        type: string
+    type: object
+  database.GetResponse-models_Todo:
+    properties:
+      data:
+        $ref: '#/definitions/models.Todo'
+      message:
+        type: string
+    type: object
+  database.GetResponse-models_User:
+    properties:
+      data:
+        $ref: '#/definitions/models.User'
+      message:
+        type: string
+    type: object
+  database.Response:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.ListCreateDTO:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  dto.ListUpdateDTO:
+    properties:
+      name:
+        type: string
+    type: object
+  dto.LoginDTO:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  enums.TodoStatus:
+    enum:
+    - IN_PROGRESS
+    - COMPLETED
+    type: string
+    x-enum-varnames:
+    - IN_PROGRESS
+    - COMPLETED
+  models.List:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      todos:
+        items:
+          $ref: '#/definitions/models.Todo'
+        type: array
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: integer
+    type: object
+  models.Todo:
+    properties:
+      createdAt:
+        type: string
+      due:
+        type: string
+      file:
+        type: string
+      filename:
+        type: string
+      id:
+        type: integer
+      important:
+        type: boolean
+      list:
+        $ref: '#/definitions/models.List'
+      listId:
+        type: integer
+      name:
+        type: string
+      note:
+        type: string
+      start:
+        type: string
+      status:
+        $ref: '#/definitions/enums.TodoStatus'
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      userId:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      imagename:
+        type: string
+      lists:
+        items:
+          $ref: '#/definitions/models.List'
+        type: array
+      name:
+        type: string
+      provider:
+        type: string
+      todos:
+        items:
+          $ref: '#/definitions/models.Todo'
+        type: array
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  user.Login.Response:
+    properties:
+      data:
+        properties:
+          token:
+            type: string
+        type: object
+      message:
+        type: string
+    type: object
+  user.Register.Response:
+    properties:
+      data:
+        properties:
+          token:
+            type: string
+        type: object
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth:
+    delete:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Delete profile
+      tags:
+      - Auth
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.GetResponse-models_User'
+      security:
+      - Bearer: []
+      summary: Get auth profile
+      tags:
+      - Auth
+    patch:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        type: string
+      - description: File to upload
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Update profile
+      tags:
+      - Auth
+  /list:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      - description: Sort
+        enum:
+        - id
+        - created_at
+        - name
+        in: query
+        name: sort
+        type: string
+      - description: Order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      - description: Search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.GetAllResponse-models_List'
+      security:
+      - Bearer: []
+      summary: Get all lists
+      tags:
+      - List
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Request Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ListCreateDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Create a list
+      tags:
+      - List
+  /list/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: List ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Delete a list
+      tags:
+      - List
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: List ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.GetResponse-models_List'
+      security:
+      - Bearer: []
+      summary: Get a list
+      tags:
+      - List
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: List ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Request Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ListUpdateDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Update a list
+      tags:
+      - List
+  /list/{id}/todo:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: List ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      - description: Sort
+        enum:
+        - id
+        - created_at
+        - name
+        in: query
+        name: sort
+        type: string
+      - description: Order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      - description: Search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.GetAllResponse-models_Todo'
+      security:
+      - Bearer: []
+      summary: Get todos
+      tags:
+      - List
+  /todo:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: size
+        type: integer
+      - description: Sort
+        enum:
+        - id
+        - created_at
+        - name
+        in: query
+        name: sort
+        type: string
+      - description: Order
+        enum:
+        - asc
+        - desc
+        in: query
+        name: order
+        type: string
+      - description: Search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.GetAllResponse-models_Todo'
+      security:
+      - Bearer: []
+      summary: Get all todos
+      tags:
+      - Todo
+  /todo/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Delete a todo
+      tags:
+      - Todo
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.GetResponse-models_Todo'
+      security:
+      - Bearer: []
+      summary: Get a todo
+      tags:
+      - Todo
+    patch:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Name
+        in: formData
+        name: name
+        type: string
+      - description: Due Time
+        format: dateTime
+        in: formData
+        name: due
+        type: string
+      - description: Note
+        in: formData
+        name: note
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Update a Todo
+      tags:
+      - Todo
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: List ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Due Time
+        format: dateTime
+        in: formData
+        name: due
+        required: true
+        type: string
+      - description: Important
+        in: formData
+        name: important
+        type: boolean
+      - description: Note
+        in: formData
+        name: note
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Create a todo
+      tags:
+      - Todo
+  /todo/{id}/complete:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Unmark complete todo
+      tags:
+      - Todo
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Mark complete todo
+      tags:
+      - Todo
+  /todo/{id}/important:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Unmark important todo
+      tags:
+      - Todo
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/database.Response'
+      security:
+      - Bearer: []
+      summary: Mark important todo
+      tags:
+      - Todo
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Request Body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user.Login.Response'
+      summary: Login User
+      tags:
+      - User
+  /user/register:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        minLength: 8
+        name: password
+        required: true
+        type: string
+      - description: Confirm Password
+        in: formData
+        minLength: 8
+        name: confirmPassword
+        required: true
+        type: string
+      - description: File to upload
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user.Register.Response'
+      summary: Create an account
+      tags:
+      - User
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
